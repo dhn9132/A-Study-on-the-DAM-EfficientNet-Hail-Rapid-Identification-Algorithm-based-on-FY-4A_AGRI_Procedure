@@ -10,63 +10,59 @@ plt.rcParams["axes.unicode_minus"] = False
 # Read the SHP file of the national boundary
 china_boundary = gpd.read_file('CHN_adm_shp/CHN_adm1.shp')
 
-# Select the boundary of Hubei province
-hubei_boundary = china_boundary[china_boundary['NAME_1'] == 'Hubei']
+# Select the boundary of Heilongjiang province
+heilongjiang_boundary = china_boundary[china_boundary['NAME_1'] == 'Heilongjiang']
 
 # Read the SHP file of national cities
 china_cities = gpd.read_file('CHN_adm_shp/CHN_adm2.shp')
 
-# Select cities within Hubei province
-hubei_cities = china_cities[china_cities['NAME_1'] == 'Hubei']
+# Select cities within Heilongjiang province
+heilongjiang_cities = china_cities[china_cities['NAME_1'] == 'Heilongjiang']
 
 # Dictionary for mapping English city names to Chinese city names
 city_mapping = {
-    'Enshi Tujia and Miao': 'Enshi Tujia and Miao Autonomous Prefecture',
-    'Ezhou': 'Ezhou City',
-    'Huanggang': 'Huanggang City',
-    'Huangshi': 'Huangshi City',
-    'Jingmen': 'Jingmen City',
-    'Jingzhou': 'Jingzhou City',
-    'Qianjiang': 'Qianjiang City',
-    'Shennongjia': 'Shennongjia Forest District',
-    'Shiyan': 'Shiyan City',
-    'Suizhou Shi': 'Suizhou City',
-    'Tianmen': 'Tianmen City',
-    'Wuhan': 'Wuhan City',
-    'Xiangfan': 'Xiangyang City',
-    'Xianning': 'Xianning City',
-    'Xiantao': 'Xiantao City',
-    'Xiaogan': 'Xiaogan City',
-    'Yichang': 'Yichang City'
+    'Daqing': 'Daqing',
+    'Daxing\'anling': 'Daxing\'anling',
+    'Harbin': 'Harbin',
+    'Hegang': 'Hegang',
+    'Heihe': 'Heihe',
+    'Jiamusi': 'Jiamusi',
+    'Jixi': 'Jixi',
+    'Mudanjiang': 'Mudanjiang',
+    'Qiqihar': 'Qiqihar',
+    'Qitaihe': 'Qitaihe',
+    'Shuangyashan': 'Shuangyashan',
+    'Suihua': 'Suihua',
+    'Yichun': 'Yichun'
 }
 
 # Add a column for Chinese city names
-hubei_cities['city_chinese'] = hubei_cities['NAME_2'].map(city_mapping)
+heilongjiang_cities['city_chinese'] = heilongjiang_cities['NAME_2'].map(city_mapping)
 
-# Create a figure and plot the boundary of Hubei province
+# Create a figure and plot the boundary of Heilongjiang province
 fig, ax = plt.subplots(figsize=(8, 8))
-hubei_boundary.plot(ax=ax, edgecolor='black', linewidth=0.5)
+heilongjiang_boundary.plot(ax=ax, edgecolor='black', linewidth=0.5)
 
 # Add city name labels
-for x, y, label in zip(hubei_cities.geometry.centroid.x, hubei_cities.geometry.centroid.y,
-                       hubei_cities['city_chinese']):
+for x, y, label in zip(heilongjiang_cities.geometry.centroid.x, heilongjiang_cities.geometry.centroid.y,
+                       heilongjiang_cities['city_chinese']):
     ax.text(x, y, label, fontsize=8, ha='center')
 
 # Data table path
-data_path = 'result_HuB_经纬度.xlsx'  # Replace with your data table path
+data_path = 'result_HeiLJ_lonlats.xlsx'  # Replace with your data table path
 
 # Read the data table
 df = pd.read_excel(data_path)
 
 for column in df.columns[3:]:
-    hubei_city_dict = {}
-    # Create a figure and plot the boundary of Hubei province
+    heilongjiang_city_dict = {}
+    # Create a figure and plot the boundary of Heilongjiang province
     fig, ax = plt.subplots(figsize=(8, 8))
-    hubei_boundary.plot(ax=ax, edgecolor='black', linewidth=1.5)
+    heilongjiang_boundary.plot(ax=ax, edgecolor='black', linewidth=1.5)
 
     # Add city name labels
-    for x, y, label in zip(hubei_cities.geometry.centroid.x, hubei_cities.geometry.centroid.y,
-                           hubei_cities['city_chinese']):
+    for x, y, label in zip(heilongjiang_cities.geometry.centroid.x, heilongjiang_cities.geometry.centroid.y,
+                           heilongjiang_cities['city_chinese']):
         ax.text(x, y, label, fontsize=8, ha='center')
 
     timestamp = column
@@ -86,20 +82,21 @@ for column in df.columns[3:]:
         region = d[1]['region']
         weight = d[1][column]
         # Find a matching city
-        city_match = hubei_cities[hubei_cities['city_chinese'] == region]
+        city_match = heilongjiang_cities[heilongjiang_cities['city_chinese'] == region]
         if len(city_match) == 0:
-            # If region name doesn't match a city name, find the city based on coordinates
             point = Point(longitude, latitude)
-            city_match = hubei_cities[hubei_cities.geometry.contains(point)]
+            city_match = heilongjiang_cities[heilongjiang_cities.geometry.contains(point)]
+        print(region)
+        print(region + ' changed to ' + city_match['city_chinese'].iloc[0])
+
         check_city = city_match['city_chinese'].iloc[0]
-        print(region + ' changed to ' + check_city)
-        if check_city in hubei_city_dict:
-            if weight > hubei_city_dict[check_city]:
-                hubei_city_dict[check_city] = weight
+        if check_city in heilongjiang_city_dict:
+            if weight > heilongjiang_city_dict[check_city]:
+                heilongjiang_city_dict[check_city] = weight
             else:
                 continue
         else:
-            hubei_city_dict[check_city] = weight
+            heilongjiang_city_dict[check_city] = weight
         # If a matching city is found
         if not city_match.empty:
             city_row = city_match.iloc[0]
@@ -128,10 +125,11 @@ for column in df.columns[3:]:
         ax_legend.text(0.35, i / 8 - 0.04, 'Weight ' + str(weight), fontsize=8, va='center')
 
     # Set the plot's geographic range
-    ax.set_xlim([107.5, 117.0])  # Set based on the actual geographic range
-    ax.set_ylim([28.0, 34.5])  # Set based on the actual geographic range
+    # ax.set_xlim([122.4342, 135.0838])  # Set based on the actual geographic range
+    # ax.set_ylim([43.4065, 53.5619])  # Set based on the actual geographic range
 
     # Save the plot as an image
     timestamp = timestamp.replace(':', '_')
     timestamp = timestamp.replace(' ', '_')
-    plt
+    plt.savefig(f'{timestamp}.png', dpi=200)
+    ax.clear()
