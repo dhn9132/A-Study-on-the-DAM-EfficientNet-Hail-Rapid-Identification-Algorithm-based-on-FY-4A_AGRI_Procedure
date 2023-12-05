@@ -52,7 +52,7 @@ for x, y, label in zip(hubei_cities.geometry.centroid.x, hubei_cities.geometry.c
     ax.text(x, y, label, fontsize=8, ha='center')
 
 # Data table path
-data_path = 'result_HuB_经纬度.xlsx'  # Replace with your data table path
+data_path = 'result_HuB_lonlats.xlsx'  # Replace with your data table path
 
 # Read the data table
 df = pd.read_excel(data_path)
